@@ -1,0 +1,173 @@
+@import "tailwindcss";
+
+@theme {
+  --color-ink-950: #05070d;
+  --color-ink-900: #0a0e18;
+  --color-ink-800: #101625;
+  --color-ink-700: #1a2236;
+  --color-ink-600: #2a3550;
+
+  --color-web-red: #e4123a;
+  --color-web-red-dim: #8a0d24;
+  --color-web-blue: #1f6fff;
+  --color-web-blue-dim: #123a8a;
+  --color-web-cyan: #4de3ff;
+
+  --color-paper: #f4f1e8;
+
+  --font-display: "Bangers", cursive;
+  --font-sans: "Space Grotesk", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
+}
+
+:root {
+  color-scheme: dark;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--color-ink-950);
+  color: var(--color-paper);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+::selection {
+  background: var(--color-web-red);
+  color: var(--color-paper);
+}
+
+/* Focus rings loud enough for remote/D-pad and keyboard nav */
+:focus-visible {
+  outline: 2px solid var(--color-web-blue);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+/* --- Brand shadows (ported from portfolio tailwind.config.ts) --- */
+.shadow-glow {
+  box-shadow:
+    0 0 24px rgba(228, 18, 58, 0.45),
+    0 0 48px rgba(31, 111, 255, 0.25);
+}
+.shadow-glow-sm {
+  box-shadow: 0 0 12px rgba(228, 18, 58, 0.35);
+}
+.shadow-panel {
+  box-shadow: 6px 6px 0 rgba(228, 18, 58, 0.9);
+}
+.shadow-panel-blue {
+  box-shadow: 6px 6px 0 rgba(31, 111, 255, 0.9);
+}
+
+/* --- Brand background patterns --- */
+.bg-halftone {
+  background-image: radial-gradient(circle, rgba(244, 241, 232, 0.5) 1px, transparent 1.4px);
+  background-size: 10px 10px;
+}
+.bg-grid-fade {
+  background-image: linear-gradient(to bottom, transparent, rgba(5, 7, 13, 1) 85%);
+}
+
+/* --- Brand motion primitives (ported from portfolio tailwind.config.ts) --- */
+@keyframes pulse-glow {
+  0%,
+  100% {
+    opacity: 0.55;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.06);
+  }
+}
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-14px);
+  }
+}
+@keyframes radar-sweep {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+@keyframes draw-line {
+  0% {
+    stroke-dashoffset: 1000;
+  }
+  100% {
+    stroke-dashoffset: 0;
+  }
+}
+@keyframes marquee {
+  0% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+@keyframes scan-line {
+  0% {
+    transform: translateY(-100%);
+  }
+  100% {
+    transform: translateY(100%);
+  }
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2.6s ease-in-out infinite;
+}
+.animate-float {
+  animation: float 5s ease-in-out infinite;
+}
+.animate-radar-sweep {
+  animation: radar-sweep 3.2s linear infinite;
+}
+.animate-draw-line {
+  animation: draw-line 1.4s ease-out forwards;
+}
+.animate-marquee {
+  animation: marquee 22s linear infinite;
+}
+.animate-scan-line {
+  animation: scan-line 1.6s ease-in-out infinite;
+}
+
+/* Motion primitives are decorative; kill them outright under reduced motion
+   rather than relying on every component to remember to check the flag. */
+@media (prefers-reduced-motion: reduce) {
+  .animate-pulse-glow,
+  .animate-float,
+  .animate-radar-sweep,
+  .animate-draw-line,
+  .animate-marquee,
+  .animate-scan-line {
+    animation: none !important;
+  }
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+  }
+}
