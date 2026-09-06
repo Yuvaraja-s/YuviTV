@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom'
 import { DEVELOPER } from '../../data/developer'
 import { GithubIcon, LinkedinIcon } from '../ui/BrandIcons'
 
@@ -49,18 +50,33 @@ export function Footer() {
         </div>
       </div>
 
-      <p className="mx-auto mt-6 max-w-6xl text-center text-xs text-paper/40 sm:text-left">
-        YuviTV streams nothing itself — it links directly to publicly available channels indexed by{' '}
-        <a
-          href="https://github.com/iptv-org/iptv"
-          target="_blank"
-          rel="noreferrer noopener"
-          className="underline decoration-dotted underline-offset-2 hover:text-web-cyan"
-        >
-          iptv-org
-        </a>{' '}
-        (unaffiliated). &copy; {new Date().getFullYear()} YuviTV.
-      </p>
+      <div className="mx-auto mt-6 flex max-w-6xl flex-col items-center gap-2 text-center text-xs text-paper/40 sm:flex-row sm:justify-between sm:text-left">
+        <p>
+          Data from{' '}
+          <a
+            href="https://github.com/iptv-org/iptv"
+            target="_blank"
+            rel="noreferrer noopener"
+            className="underline decoration-dotted underline-offset-2 hover:text-web-cyan"
+          >
+            iptv-org
+          </a>{' '}
+          (unaffiliated) &middot; &copy; {new Date().getFullYear()} YuviTV
+        </p>
+        <p className="flex items-center gap-3">
+          <Link to="/disclaimer" className="hover:text-web-cyan">
+            Disclaimer
+          </Link>
+          <a
+            href="https://github.com/Yuvaraja-s/YuviTV/issues/new"
+            target="_blank"
+            rel="noreferrer noopener"
+            className="hover:text-web-cyan"
+          >
+            Report an issue
+          </a>
+        </p>
+      </div>
     </footer>
   )
 }
