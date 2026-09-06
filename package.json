@@ -16,7 +16,6 @@
     "@fontsource/space-grotesk": "^5.3.0",
     "@radix-ui/react-dialog": "^1.1.23",
     "@radix-ui/react-select": "^2.3.7",
-    "@radix-ui/react-tooltip": "^1.2.16",
     "@react-three/fiber": "^9.7.0",
     "@tailwindcss/vite": "^4.3.3",
     "@tanstack/react-virtual": "^3.14.10",

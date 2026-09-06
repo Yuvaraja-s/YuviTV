@@ -48,5 +48,21 @@ export default defineConfig({
   build: {
     target: 'esnext',
     sourcemap: false,
+    rollupOptions: {
+      output: {
+        // hls.js and three.js/@react-three/fiber are already split out via
+        // dynamic import (only loaded on /watch and inside BootLoader). This
+        // separates the other big, rarely-changing vendor code from the app's
+        // own (frequently-changing) code, so a redeploy doesn't force
+        // visitors to re-download React/Router/Radix/motion every time.
+        manualChunks(id: string) {
+          if (!id.includes('node_modules')) return undefined
+          if (/[\\/](react|react-dom|react-router-dom|scheduler)[\\/]/.test(id)) return 'react-vendor'
+          if (/[\\/](framer-motion|motion-dom|motion-utils|gsap)[\\/]/.test(id)) return 'motion-vendor'
+          if (/[\\/]@radix-ui[\\/]/.test(id)) return 'radix-vendor'
+          return undefined
+        },
+      },
+    },
   },
 })
