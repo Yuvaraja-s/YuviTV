@@ -3,6 +3,7 @@ import type { Channel } from '../../data/types'
 import { useHlsPlayer } from '../../hooks/useHlsPlayer'
 import { getPlayableStreams, getRestrictedStreams } from '../../lib/streamCapabilities'
 import { CountryFlag } from '../ui/CountryFlag'
+import { TuningTransition } from '../loader/TuningTransition'
 import { PlayerControls } from './PlayerControls'
 import { PlayerErrorState } from './PlayerErrorState'
 import { StreamFallback } from './StreamFallback'
@@ -168,6 +169,8 @@ export function VideoPlayer({ channel, hasPrevious, hasNext, onPrevious, onNext 
     >
       {/* eslint-disable-next-line jsx-a11y/media-has-caption -- captions are wired dynamically when a channel actually carries a text track */}
       <video ref={videoRef} playsInline className="h-full w-full" onClick={togglePlay} />
+
+      <TuningTransition key={channel.id} channel={channel} />
 
       {(player.status === 'loading' || player.status === 'buffering') && (
         <div className="pointer-events-none absolute inset-0 flex items-center justify-center">

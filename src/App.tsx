@@ -1,6 +1,7 @@
 import { MotionConfig } from 'framer-motion'
 import { useEffect } from 'react'
 import { HashRouter, Route, Routes } from 'react-router-dom'
+import { BootLoader } from './components/loader/BootLoader'
 import { Footer } from './components/layout/Footer'
 import { Navbar } from './components/layout/Navbar'
 import { SkipToContent } from './components/layout/SkipToContent'
@@ -21,6 +22,7 @@ function App() {
 
   return (
     <MotionConfig reducedMotion="user">
+      <BootLoader />
       <HashRouter>
         <div className="flex min-h-screen flex-col">
           <SkipToContent />

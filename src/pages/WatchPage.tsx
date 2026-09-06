@@ -1,7 +1,6 @@
 import { ArrowLeft, Star } from 'lucide-react'
 import { useEffect, useMemo } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
-import { CatalogLoading } from '../components/browse/CatalogLoading'
 import { VideoPlayer } from '../components/player/VideoPlayer'
 import { CountryFlag } from '../components/ui/CountryFlag'
 import { useChannels } from '../hooks/useChannels'
@@ -12,7 +11,6 @@ import { useRecentlyWatchedStore } from '../store/useRecentlyWatchedStore'
 export function WatchPage() {
   const { channelId } = useParams<{ channelId: string }>()
   const navigate = useNavigate()
-  const status = useCatalogStore((s) => s.status)
   const allChannels = useCatalogStore((s) => s.channels)
   const { channels: filteredChannels } = useChannels()
   const { isFavorite, toggle } = useFavoritesStore()
@@ -30,10 +28,6 @@ export function WatchPage() {
   useEffect(() => {
     if (channel) pushRecent(channel.id)
   }, [channel, pushRecent])
-
-  if (status === 'loading' || status === 'error') {
-    return <CatalogLoading />
-  }
 
   if (!channel) {
     return (
