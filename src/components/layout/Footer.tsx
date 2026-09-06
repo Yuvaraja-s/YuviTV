@@ -50,7 +50,7 @@ export function Footer() {
         </div>
       </div>
 
-      <div className="mx-auto mt-6 flex max-w-6xl flex-col items-center gap-2 text-center text-xs text-paper/40 sm:flex-row sm:justify-between sm:text-left">
+      <div className="mx-auto mt-6 flex max-w-6xl flex-col items-center gap-2 text-center text-xs text-paper/60 sm:flex-row sm:justify-between sm:text-left">
         <p>
           Data from{' '}
           <a

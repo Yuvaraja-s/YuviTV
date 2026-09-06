@@ -73,7 +73,7 @@ export function PlayerControls(props: PlayerControlsProps) {
         className="h-1 w-20 accent-web-red"
       />
 
-      <span className="ml-2 flex items-center gap-1.5 rounded-full bg-web-red/20 px-2 py-1 text-xs font-semibold text-web-red">
+      <span className="ml-2 flex items-center gap-1.5 rounded-full bg-web-red/20 px-2 py-1 text-xs font-semibold text-web-red-text">
         <span className="h-1.5 w-1.5 animate-pulse-glow rounded-full bg-web-red" aria-hidden="true" />
         LIVE
       </span>

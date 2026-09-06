@@ -66,14 +66,14 @@ export function CountrySelect() {
             </Select.Item>
             {groups.map((group) => (
               <Select.Group key={group.name}>
-                <Select.Label className="px-2 pt-2 pb-1 text-xs font-semibold tracking-wide text-paper/40 uppercase">
+                <Select.Label className="px-2 pt-2 pb-1 text-xs font-semibold tracking-wide text-paper/60 uppercase">
                   {group.name}
                 </Select.Label>
                 {group.options.map((opt) => (
                   <Select.Item key={opt.code} value={opt.code} className={itemClass}>
                     <CountryFlag code={opt.code} className="h-3.5 w-5 shrink-0 rounded-sm" />
                     <Select.ItemText>{opt.name}</Select.ItemText>
-                    <span className="ml-auto text-paper/40">{opt.count.toLocaleString()}</span>
+                    <span className="ml-auto text-paper/60">{opt.count.toLocaleString()}</span>
                     <Select.ItemIndicator>
                       <Check size={14} aria-hidden="true" />
                     </Select.ItemIndicator>

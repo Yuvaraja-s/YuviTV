@@ -37,7 +37,7 @@ export function LanguageSelect() {
             {languageOptions.map((opt) => (
               <Select.Item key={opt.code} value={opt.code} className={itemClass}>
                 <Select.ItemText>{opt.name}</Select.ItemText>
-                <span className="ml-auto text-paper/40">{opt.count.toLocaleString()}</span>
+                <span className="ml-auto text-paper/60">{opt.count.toLocaleString()}</span>
                 <Select.ItemIndicator>
                   <Check size={14} aria-hidden="true" />
                 </Select.ItemIndicator>

@@ -13,7 +13,7 @@ export function Navbar() {
         <NavLink to="/" className="flex items-center gap-2">
           <Logo size={32} />
           <span className="font-display text-xl tracking-wide text-paper">
-            Yuvi<span className="text-web-red">TV</span>
+            Yuvi<span className="text-web-red-text">TV</span>
           </span>
         </NavLink>
 

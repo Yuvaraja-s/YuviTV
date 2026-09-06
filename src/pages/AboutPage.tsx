@@ -9,13 +9,13 @@ export function AboutPage() {
       <div className="flex items-center gap-3">
         <Logo size={44} />
         <h1 className="font-display text-3xl tracking-wide text-paper">
-          About Yuvi<span className="text-web-red">TV</span>
+          About Yuvi<span className="text-web-red-text">TV</span>
         </h1>
       </div>
 
       <p className="text-paper/70">
         YuviTV is a free, open browser for live IPTV channels, built on the public catalog maintained by{' '}
-        <a href="https://github.com/iptv-org/iptv" target="_blank" rel="noreferrer noopener" className="text-web-cyan hover:underline">
+        <a href="https://github.com/iptv-org/iptv" target="_blank" rel="noreferrer noopener" className="text-web-cyan underline underline-offset-2">
           iptv-org
         </a>
         . It doesn't stream, host, or transcode any video itself — every play button links your browser directly to the
@@ -26,7 +26,7 @@ export function AboutPage() {
       <p className="text-paper/70">
         Because the catalog is community-sourced and public, some streams won't play — a broadcaster may require headers
         browsers can't send, or a link may have gone stale. See the{' '}
-        <Link to="/disclaimer" className="text-web-cyan hover:underline">
+        <Link to="/disclaimer" className="text-web-cyan underline underline-offset-2">
           disclaimer
         </Link>{' '}
         for how that's handled.

@@ -5,6 +5,8 @@ import { BootLoader } from './components/loader/BootLoader'
 import { Footer } from './components/layout/Footer'
 import { Navbar } from './components/layout/Navbar'
 import { SkipToContent } from './components/layout/SkipToContent'
+import { OfflineBanner } from './components/ui/OfflineBanner'
+import { UpdateToast } from './components/ui/UpdateToast'
 import { AboutPage } from './pages/AboutPage'
 import { DisclaimerPage } from './pages/DisclaimerPage'
 import { FavoritesPage } from './pages/FavoritesPage'
@@ -26,6 +28,7 @@ function App() {
       <HashRouter>
         <div className="flex min-h-screen flex-col">
           <SkipToContent />
+          <OfflineBanner />
           <Navbar />
           <main id="main-content" className="flex-1">
             <Routes>
@@ -39,6 +42,7 @@ function App() {
           </main>
           <Footer />
         </div>
+        <UpdateToast />
       </HashRouter>
     </MotionConfig>
   )

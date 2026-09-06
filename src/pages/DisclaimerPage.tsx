@@ -6,7 +6,7 @@ export function DisclaimerPage() {
       <p>
         YuviTV is an independent, non-commercial project. It browses and links to publicly available live-stream URLs
         indexed by the{' '}
-        <a href="https://github.com/iptv-org/iptv" target="_blank" rel="noreferrer noopener" className="text-web-cyan hover:underline">
+        <a href="https://github.com/iptv-org/iptv" target="_blank" rel="noreferrer noopener" className="text-web-cyan underline underline-offset-2">
           iptv-org
         </a>{' '}
         community project. YuviTV is not affiliated with iptv-org or with any broadcaster listed in its catalog.
@@ -31,7 +31,7 @@ export function DisclaimerPage() {
           href="https://github.com/Yuvaraja-s/YuviTV/issues/new?labels=takedown-request&title=Takedown%20request%3A%20"
           target="_blank"
           rel="noreferrer noopener"
-          className="text-web-cyan hover:underline"
+          className="text-web-cyan underline underline-offset-2"
         >
           open a GitHub issue
         </a>{' '}

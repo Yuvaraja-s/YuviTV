@@ -21,7 +21,7 @@ export function CategoryChips() {
             <span className="flex items-center gap-1.5">
               <Icon size={14} aria-hidden="true" />
               {opt.name}
-              <span className="text-paper/40">{opt.count.toLocaleString()}</span>
+              <span className="text-paper/60">{opt.count.toLocaleString()}</span>
             </span>
           </Chip>
         )

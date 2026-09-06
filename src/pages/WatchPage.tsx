@@ -1,9 +1,10 @@
-import { ArrowLeft, Star } from 'lucide-react'
+import { ArrowLeft, Star, WifiOff } from 'lucide-react'
 import { useEffect, useMemo } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { VideoPlayer } from '../components/player/VideoPlayer'
 import { CountryFlag } from '../components/ui/CountryFlag'
 import { useChannels } from '../hooks/useChannels'
+import { useOnlineStatus } from '../hooks/useOnlineStatus'
 import { useCatalogStore } from '../store/useCatalogStore'
 import { useFavoritesStore } from '../store/useFavoritesStore'
 import { useRecentlyWatchedStore } from '../store/useRecentlyWatchedStore'
@@ -15,6 +16,7 @@ export function WatchPage() {
   const { channels: filteredChannels } = useChannels()
   const { isFavorite, toggle } = useFavoritesStore()
   const pushRecent = useRecentlyWatchedStore((s) => s.push)
+  const online = useOnlineStatus()
 
   const channel = useMemo(() => allChannels.find((c) => c.id === channelId), [allChannels, channelId])
 
@@ -49,14 +51,21 @@ export function WatchPage() {
         Back to browse
       </Link>
 
-      <VideoPlayer
-        key={channel.id}
-        channel={channel}
-        hasPrevious={Boolean(previous)}
-        hasNext={Boolean(next)}
-        onPrevious={() => previous && navigate(`/watch/${previous.id}`)}
-        onNext={() => next && navigate(`/watch/${next.id}`)}
-      />
+      {online ? (
+        <VideoPlayer
+          key={channel.id}
+          channel={channel}
+          hasPrevious={Boolean(previous)}
+          hasNext={Boolean(next)}
+          onPrevious={() => previous && navigate(`/watch/${previous.id}`)}
+          onNext={() => next && navigate(`/watch/${next.id}`)}
+        />
+      ) : (
+        <div className="flex aspect-video flex-col items-center justify-center gap-3 rounded-lg border border-ink-700 bg-ink-900 text-center">
+          <WifiOff size={28} aria-hidden="true" className="text-paper/30" />
+          <p className="text-paper/70">Playback needs a connection — you're currently offline.</p>
+        </div>
+      )}
 
       <div className="flex items-start justify-between gap-4">
         <div>
@@ -79,7 +88,7 @@ export function WatchPage() {
         </button>
       </div>
 
-      <p className="text-xs text-paper/40">
+      <p className="text-xs text-paper/60">
         Keyboard: Space play/pause · M mute · F fullscreen · ↑/↓ volume · ←/→ previous/next channel
       </p>
     </div>

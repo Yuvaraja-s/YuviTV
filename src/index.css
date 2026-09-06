@@ -9,6 +9,11 @@
 
   --color-web-red: #e4123a;
   --color-web-red-dim: #8a0d24;
+  /* #e4123a is 4.26:1 on ink-950 — passes WCAG AA for large text (≥24px, or
+     ≥18.66px bold) but not for normal text. Use this brighter variant for
+     any red *text* smaller than that; keep web-red for icons/borders/fills,
+     where the 3:1 non-text threshold already applies. */
+  --color-web-red-text: #ff3355;
   --color-web-blue: #1f6fff;
   --color-web-blue-dim: #123a8a;
   --color-web-cyan: #4de3ff;
