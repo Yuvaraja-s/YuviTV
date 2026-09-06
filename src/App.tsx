@@ -1,6 +1,48 @@
 import { MotionConfig, motion } from 'framer-motion'
+import { useEffect } from 'react'
 import { Footer } from './components/layout/Footer'
 import { Logo } from './components/ui/Logo'
+import { useCatalogStore } from './store/useCatalogStore'
+
+/**
+ * Temporary proof-of-life for the data layer (Phase 1) — an unstyled list,
+ * not the real browse UI. Phase 2 replaces this with the filterable,
+ * virtualized channel grid.
+ */
+function CatalogStatus() {
+  const { status, channels, progress, revalidating, error, init } = useCatalogStore()
+
+  useEffect(() => {
+    init()
+  }, [init])
+
+  return (
+    <div className="mx-auto mt-10 w-full max-w-xl rounded-lg border border-ink-700 bg-ink-900 p-4 text-left font-mono text-xs text-paper/70">
+      <p>
+        status: <span className="text-web-cyan">{status}</span>
+        {revalidating && <span className="text-web-blue"> (revalidating…)</span>}
+      </p>
+      {status === 'loading' && (
+        <p>
+          {progress.label} {progress.pct !== null ? `${progress.pct}%` : ''}
+        </p>
+      )}
+      {error && <p className="text-web-red">error: {error}</p>}
+      {channels.length > 0 && (
+        <>
+          <p className="mt-2 text-paper">{channels.length.toLocaleString()} playable channels loaded</p>
+          <ul className="mt-2 max-h-48 space-y-1 overflow-y-auto">
+            {channels.slice(0, 20).map((c) => (
+              <li key={c.id}>
+                {c.name} — {c.country} — {c.categories.join(', ')}
+              </li>
+            ))}
+          </ul>
+        </>
+      )}
+    </div>
+  )
+}
 
 function App() {
   return (
@@ -36,6 +78,8 @@ function App() {
               region, and category. The full channel catalog and player are coming online soon.
             </p>
           </motion.div>
+
+          <CatalogStatus />
         </main>
         <Footer />
       </div>
