@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import type { Channel } from '../../data/types'
 import { useHlsPlayer } from '../../hooks/useHlsPlayer'
+import { enterFullscreen, exitFullscreen, getFullscreenElement, isFullscreenSupported } from '../../lib/fullscreen'
 import { getPlayableStreams, getRestrictedStreams } from '../../lib/streamCapabilities'
 import { CountryFlag } from '../ui/CountryFlag'
 import { TuningTransition } from '../loader/TuningTransition'
@@ -38,6 +39,7 @@ export function VideoPlayer({ channel, hasPrevious, hasNext, onPrevious, onNext 
   const [ccEnabled, setCcEnabled] = useState(false)
   const [controlsVisible, setControlsVisible] = useState(true)
   const [canPiP, setCanPiP] = useState(false)
+  const [canFullscreen, setCanFullscreen] = useState(false)
 
   // Native <video> transport state, kept in sync via its own events (separate
   // from useHlsPlayer, which only owns "is a source attached and healthy").
@@ -58,6 +60,7 @@ export function VideoPlayer({ channel, hasPrevious, hasNext, onPrevious, onNext 
     video.addEventListener('volumechange', onVolumeChange)
     video.addEventListener('loadedmetadata', onLoadedMetadata)
     setCanPiP(document.pictureInPictureEnabled && !!video.requestPictureInPicture)
+    setCanFullscreen(isFullscreenSupported(video))
 
     return () => {
       video.removeEventListener('play', onPlay)
@@ -68,10 +71,25 @@ export function VideoPlayer({ channel, hasPrevious, hasNext, onPrevious, onNext 
   }, [channel.id])
 
   useEffect(() => {
-    const onFullscreenChange = () => setIsFullscreen(document.fullscreenElement === containerRef.current)
+    const video = videoRef.current
+    // Standard API fires `fullscreenchange` on the document; iOS Safari's
+    // video-only fullscreen fires begin/end events on the <video> itself
+    // instead and never touches document.fullscreenElement at all.
+    const onFullscreenChange = () => setIsFullscreen(getFullscreenElement() === containerRef.current)
+    const onIosBegin = () => setIsFullscreen(true)
+    const onIosEnd = () => setIsFullscreen(false)
+
     document.addEventListener('fullscreenchange', onFullscreenChange)
-    return () => document.removeEventListener('fullscreenchange', onFullscreenChange)
-  }, [])
+    document.addEventListener('webkitfullscreenchange', onFullscreenChange)
+    video?.addEventListener('webkitbeginfullscreen', onIosBegin)
+    video?.addEventListener('webkitendfullscreen', onIosEnd)
+    return () => {
+      document.removeEventListener('fullscreenchange', onFullscreenChange)
+      document.removeEventListener('webkitfullscreenchange', onFullscreenChange)
+      video?.removeEventListener('webkitbeginfullscreen', onIosBegin)
+      video?.removeEventListener('webkitendfullscreen', onIosEnd)
+    }
+  }, [channel.id])
 
   const resetIdleTimer = () => {
     setControlsVisible(true)
@@ -117,8 +135,12 @@ export function VideoPlayer({ channel, hasPrevious, hasNext, onPrevious, onNext 
     }
   }
   const toggleFullscreen = () => {
-    if (document.fullscreenElement) document.exitFullscreen()
-    else containerRef.current?.requestFullscreen()
+    const video = videoRef.current
+    if (getFullscreenElement()) {
+      exitFullscreen(video).catch(() => {})
+    } else if (containerRef.current) {
+      enterFullscreen(containerRef.current, video).catch(() => {})
+    }
   }
 
   useEffect(() => {
@@ -211,6 +233,7 @@ export function VideoPlayer({ channel, hasPrevious, hasNext, onPrevious, onNext 
           onToggleCC={toggleCC}
           canPiP={canPiP}
           onTogglePiP={togglePiP}
+          canFullscreen={canFullscreen}
           isFullscreen={isFullscreen}
           onToggleFullscreen={toggleFullscreen}
           hasPrevious={hasPrevious}

@@ -31,6 +31,7 @@ interface PlayerControlsProps {
   onToggleCC: () => void
   canPiP: boolean
   onTogglePiP: () => void
+  canFullscreen: boolean
   isFullscreen: boolean
   onToggleFullscreen: () => void
   hasPrevious: boolean
@@ -39,14 +40,24 @@ interface PlayerControlsProps {
   onNext: () => void
 }
 
-const iconButtonClass =
-  'flex h-9 w-9 items-center justify-center rounded-full text-paper/90 hover:bg-paper/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-web-cyan'
+// h-11 w-11 (44px) meets the WCAG 2.5.5 minimum touch target; shrink-0 is
+// load-bearing — without it, flexbox quietly compresses every button below
+// that (verified down to ~17px on an iPhone-width viewport) once the row
+// runs out of space, rather than the row scrolling or wrapping.
+const iconButtonBase =
+  'h-11 w-11 shrink-0 items-center justify-center rounded-full text-paper/90 hover:bg-paper/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-web-cyan'
+const iconButtonClass = `flex ${iconButtonBase}`
+// Combining a bare `flex` with `hidden` on the same element is ambiguous —
+// both are unprefixed display utilities. This starts from `hidden` instead
+// so "hidden on mobile, shown from sm: up" (used for PiP, a desktop-
+// multitasking feature that isn't essential on a phone) is unambiguous.
+const iconButtonClassDesktopOnly = `hidden sm:flex ${iconButtonBase}`
 
 export function PlayerControls(props: PlayerControlsProps) {
   const VolumeIcon = props.muted || props.volume === 0 ? VolumeX : props.volume < 0.5 ? Volume1 : Volume2
 
   return (
-    <div className="flex items-center gap-1 bg-gradient-to-t from-ink-950/95 to-transparent px-3 pt-8 pb-3">
+    <div className="flex items-center gap-0.5 overflow-x-auto bg-gradient-to-t from-ink-950/95 to-transparent px-2 pt-8 pb-2 [scrollbar-width:none] sm:gap-1 sm:px-3 sm:pb-3">
       <button type="button" onClick={props.onPrevious} disabled={!props.hasPrevious} aria-label="Previous channel" className={`${iconButtonClass} disabled:opacity-30`}>
         <SkipBack size={17} aria-hidden="true" />
       </button>
@@ -62,6 +73,8 @@ export function PlayerControls(props: PlayerControlsProps) {
       <button type="button" onClick={props.onToggleMute} aria-label={props.muted ? 'Unmute' : 'Mute'} className={iconButtonClass}>
         <VolumeIcon size={18} aria-hidden="true" />
       </button>
+      {/* A drag-slider fights with page/scroll gestures on touch, and phones
+          already have hardware volume buttons — so only desktop gets it. */}
       <input
         type="range"
         min={0}
@@ -70,19 +83,20 @@ export function PlayerControls(props: PlayerControlsProps) {
         value={props.muted ? 0 : props.volume}
         onChange={(e) => props.onVolumeChange(Number(e.target.value))}
         aria-label="Volume"
-        className="h-1 w-20 accent-web-red"
+        className="hidden h-1 w-20 shrink-0 accent-web-red sm:block"
       />
 
-      <span className="ml-2 flex items-center gap-1.5 rounded-full bg-web-red/20 px-2 py-1 text-xs font-semibold text-web-red-text">
+      <span className="ml-1 flex shrink-0 items-center gap-1.5 rounded-full bg-web-red/20 px-1.5 py-1 text-xs font-semibold text-web-red-text sm:ml-2 sm:px-2">
         <span className="h-1.5 w-1.5 animate-pulse-glow rounded-full bg-web-red" aria-hidden="true" />
-        LIVE
+        {/* sr-only (not `hidden`) below sm: — visually compact, but still announced. */}
+        <span className="sr-only sm:not-sr-only">LIVE</span>
       </span>
 
       <div className="flex-1" />
 
       {props.sources.length > 1 && (
         <Select.Root value={String(props.sourceIndex)} onValueChange={(v) => props.onSelectSource(Number(v))}>
-          <Select.Trigger aria-label="Choose source" className="flex items-center gap-1 rounded-md px-2 py-1.5 text-xs text-paper/80 hover:bg-paper/10">
+          <Select.Trigger aria-label="Choose source" className="flex shrink-0 items-center gap-1 rounded-md px-2 py-1.5 text-xs text-paper/80 hover:bg-paper/10">
             <Select.Value>{streamLabel(props.sources[props.sourceIndex], props.sourceIndex)}</Select.Value>
             <Select.Icon>
               <ChevronDown size={12} aria-hidden="true" />
@@ -119,14 +133,16 @@ export function PlayerControls(props: PlayerControlsProps) {
       )}
 
       {props.canPiP && (
-        <button type="button" onClick={props.onTogglePiP} aria-label="Picture in picture" className={iconButtonClass}>
+        <button type="button" onClick={props.onTogglePiP} aria-label="Picture in picture" className={iconButtonClassDesktopOnly}>
           <PictureInPicture2 size={16} aria-hidden="true" />
         </button>
       )}
 
-      <button type="button" onClick={props.onToggleFullscreen} aria-label={props.isFullscreen ? 'Exit fullscreen' : 'Fullscreen'} className={iconButtonClass}>
-        {props.isFullscreen ? <Minimize size={17} aria-hidden="true" /> : <Maximize size={17} aria-hidden="true" />}
-      </button>
+      {props.canFullscreen && (
+        <button type="button" onClick={props.onToggleFullscreen} aria-label={props.isFullscreen ? 'Exit fullscreen' : 'Fullscreen'} className={iconButtonClass}>
+          {props.isFullscreen ? <Minimize size={17} aria-hidden="true" /> : <Maximize size={17} aria-hidden="true" />}
+        </button>
+      )}
     </div>
   )
 }
