@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import type { Stream } from '../data/types'
+import { streamUrl } from '../lib/streamCapabilities'
 
 export type PlayerStatus = 'loading' | 'buffering' | 'playing' | 'paused' | 'error'
 
@@ -95,7 +96,7 @@ export function useHlsPlayer(videoRef: React.RefObject<HTMLVideoElement | null>,
 
       if (Hls.isSupported()) {
         hls = new Hls({ enableWorker: true })
-        hls.loadSource(stream.url)
+        hls.loadSource(streamUrl(stream))
         hls.attachMedia(video)
         hls.on(Hls.Events.FRAG_LOADED, armStallTimer)
         hls.on(Hls.Events.MANIFEST_PARSED, () => {
@@ -116,7 +117,7 @@ export function useHlsPlayer(videoRef: React.RefObject<HTMLVideoElement | null>,
           advanceOrFail('This stream is currently unavailable.')
         })
       } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-        video.src = stream.url
+        video.src = streamUrl(stream)
         video.play().catch(() => {})
       } else {
         advanceOrFail("This browser can't play this stream format.")

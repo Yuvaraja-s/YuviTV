@@ -1,4 +1,5 @@
 import type { Stream } from '../data/types'
+import { streamUrl } from './streamCapabilities'
 
 const PROBE_TIMEOUT_MS = 8000
 
@@ -35,7 +36,7 @@ export function probeStream(stream: Stream): Promise<boolean> {
 
       if (Hls.isSupported()) {
         hls = new Hls({ enableWorker: true })
-        hls.loadSource(stream.url)
+        hls.loadSource(streamUrl(stream))
         hls.attachMedia(video)
         hls.on(Hls.Events.FRAG_LOADED, () => finish(true))
         hls.on(Hls.Events.ERROR, (_event, data) => {
@@ -44,7 +45,7 @@ export function probeStream(stream: Stream): Promise<boolean> {
       } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
         video.addEventListener('loadeddata', () => finish(true))
         video.addEventListener('error', () => finish(false))
-        video.src = stream.url
+        video.src = streamUrl(stream)
       } else {
         finish(false)
       }

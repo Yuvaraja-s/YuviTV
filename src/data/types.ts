@@ -3,8 +3,12 @@ export interface Stream {
   title: string
   quality: string | null
   labels: string[]
-  /** True when the stream needs a Referer/User-Agent the browser can't set. */
-  requiresHeaders: boolean
+  /** The User-Agent/Referer the origin server expects from a compliant
+   * player. Null means none needed. A browser's own <video>/hls.js can't set
+   * these, so a stream with either set only plays in-page through the
+   * optional proxy — see src/lib/streamCapabilities.ts and cloudflare-worker/. */
+  userAgent: string | null
+  referrer: string | null
 }
 
 export interface Channel {

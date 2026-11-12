@@ -6,6 +6,10 @@ dist/
 dist-ssr/
 *.local
 
+# Cloudflare Worker local dev state and secrets (cloudflare-worker/)
+.wrangler/
+.dev.vars
+
 # Logs
 npm-debug.log*
 yarn-debug.log*

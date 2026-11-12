@@ -6,7 +6,7 @@ A free, open web player for live IPTV channels from around the world — filtera
 
 ## What this is (and isn't)
 
-YuviTV is a browser for publicly available stream links, not a streaming service. There's no backend, no video hosting, and no proxying — every play button opens a direct connection from your browser to the original broadcaster's own server. See [`/disclaimer`](https://yuvaraja-s.github.io/YuviTV/#/disclaimer) for the full story, including how to report a broken stream or request a takedown.
+YuviTV is a browser for publicly available stream links, not a streaming service. There's no backend or video hosting — for almost every channel, the play button opens a direct connection from your browser to the original broadcaster's own server. A small subset of channels need a header a browser can't set itself; for those only, an optional self-hosted header relay (see [`cloudflare-worker/`](cloudflare-worker/)) can be wired in, with no storage or transcoding involved. See [`/disclaimer`](https://yuvaraja-s.github.io/YuviTV/#/disclaimer) for the full story, including how to report a broken stream or request a takedown.
 
 ## Stack
 
@@ -41,7 +41,7 @@ Pushing to `main` runs [`.github/workflows/deploy.yml`](.github/workflows/deploy
 
 `iptv-org` publishes channels, streams, languages, countries, regions, feeds, logos, and a blocklist as separate static JSON endpoints. `src/workers/catalogWorker.ts` fetches all of them in parallel inside a Web Worker, `src/data/normalize.ts` joins them into one flat `Channel[]` and hard-excludes NSFW/`xxx`-category/closed/blocklisted/streamless channels (not a UI setting — see the disclaimer), and the result is cached in IndexedDB with a 12-hour TTL and silent background revalidation. See `src/data/` and `src/store/useCatalogStore.ts`.
 
-Some streams require a `Referer`/`User-Agent` header that browsers can't set on `<video>`/hls.js requests — those are excluded from in-page playback and surfaced instead as "copy link" / "open externally" options (`src/components/player/StreamFallback.tsx`), since they'll work fine in VLC or similar.
+Some streams require a `Referer`/`User-Agent` header that browsers can't set on `<video>`/hls.js requests — by default those are excluded from in-page playback and surfaced instead as "copy link" / "open externally" options (`src/components/player/StreamFallback.tsx`), since they'll work fine in VLC or similar. Deploying the optional Worker in [`cloudflare-worker/`](cloudflare-worker/) and setting `VITE_STREAM_PROXY_URL` lets those same streams play in-page instead, by forwarding the header they need (see `src/lib/streamCapabilities.ts` and `src/lib/streamProxy.ts`).
 
 ## Project structure
 
@@ -59,6 +59,8 @@ src/
     player/          VideoPlayer, controls, error/fallback states
     ui/              small shared primitives
   pages/           route-level components (Home, Watch, Favorites, About, Disclaimer)
+
+cloudflare-worker/ optional header-forwarding proxy for header-restricted streams — see its README
 ```
 
 ## Accessibility
@@ -70,7 +72,8 @@ Skip-to-content, focus-visible rings tuned for keyboard/remote navigation, ARIA-
 - **EPG ("what's on now/next")** — `iptv-org` publishes `guides.json`; not wired up yet.
 - **Subdivision-level regional filtering** — country-level only for now; `subdivisions.json` is available upstream if this is wanted later.
 - **No analytics** — a deliberate default, not an oversight.
-- Some streams simply won't play, by design of the underlying dataset (dead links, geo-blocking, header-restricted origins). This is expected — see the disclaimer.
+- Some streams simply won't play, by design of the underlying dataset (dead links, geo-blocking). This is expected — see the disclaimer. Channels are probed in the background and marked Live/Offline/Checking right on the browse grid (`src/store/useChannelHealthStore.ts`), with a "hide offline" filter.
+- Header-restricted origins play in-page only if the optional proxy in [`cloudflare-worker/`](cloudflare-worker/) is deployed and configured; otherwise they're marked "VLC only".
 
 ## Credits
 

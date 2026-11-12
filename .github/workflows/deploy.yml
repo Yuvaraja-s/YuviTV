@@ -31,6 +31,12 @@ jobs:
         run: npm ci
 
       - name: Build
+        # Both are optional — see cloudflare-worker/README.md. Unset, the
+        # build behaves exactly as before (header-restricted streams stay
+        # "VLC only" instead of playing in-page).
+        env:
+          VITE_STREAM_PROXY_URL: ${{ secrets.STREAM_PROXY_URL }}
+          VITE_STREAM_PROXY_KEY: ${{ secrets.STREAM_PROXY_KEY }}
         run: npm run build
 
       - name: Upload build artifact

@@ -88,7 +88,8 @@ export function normalizeCatalog(raw: Record<string, unknown>, fetchedAt: number
       title: s.title,
       quality: s.quality,
       labels: s.labels,
-      requiresHeaders: Boolean(s.user_agent || s.referrer),
+      userAgent: s.user_agent,
+      referrer: s.referrer,
     }))
 
     channels.push({

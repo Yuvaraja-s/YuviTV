@@ -13,9 +13,13 @@ export function DisclaimerPage() {
       </p>
 
       <p>
-        YuviTV does not host, store, transcode, or proxy any video. There is no backend server at all — when you press
-        play, your browser opens a connection directly to the original broadcaster's own server. YuviTV's role begins
-        and ends at organizing links.
+        YuviTV does not host, store, or transcode any video. For nearly every channel, there is no backend server at
+        all — your browser opens a connection directly to the original broadcaster's own server. A small number of
+        channels (marked "VLC only" when the operator hasn't enabled this) need a <code>Referer</code>/
+        <code>User-Agent</code> header a browser can't set on its own; for those, and only those, an optional,
+        self-hosted relay forwards that header unmodified — the same thing a desktop player like VLC does with the
+        same link — without storing or altering the stream. YuviTV's role begins and ends at organizing links and, for
+        that narrow case, passing through the one header a browser can't send itself.
       </p>
 
       <p>
