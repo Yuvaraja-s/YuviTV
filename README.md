@@ -6,7 +6,7 @@ A free, open web player for live IPTV channels from around the world — filtera
 
 ## What this is (and isn't)
 
-YuviTV is a browser for publicly available stream links, not a streaming service. There's no backend or video hosting — for almost every channel, the play button opens a direct connection from your browser to the original broadcaster's own server. A small subset of channels need a header a browser can't set itself; for those only, an optional self-hosted header relay (see [`cloudflare-worker/`](cloudflare-worker/)) can be wired in, with no storage or transcoding involved. See [`/disclaimer`](https://yuvaraja-s.github.io/YuviTV/#/disclaimer) for the full story, including how to report a broken stream or request a takedown.
+YuviTV is a browser for publicly available stream links, not a streaming service. There's no backend or video hosting — for most channels, the play button opens a direct connection from your browser to the original broadcaster's own server. A subset of channels either need a header a browser can't set itself, or are plain-`http://` and get blocked by the browser's own mixed-content rule on this `https://` site; for those, an optional self-hosted relay (see [`cloudflare-worker/`](cloudflare-worker/)) can be wired in, with no storage or transcoding involved. See [`/disclaimer`](https://yuvaraja-s.github.io/YuviTV/#/disclaimer) for the full story, including how to report a broken stream or request a takedown.
 
 ## Stack
 
@@ -41,7 +41,7 @@ Pushing to `main` runs [`.github/workflows/deploy.yml`](.github/workflows/deploy
 
 `iptv-org` publishes channels, streams, languages, countries, regions, feeds, logos, and a blocklist as separate static JSON endpoints. `src/workers/catalogWorker.ts` fetches all of them in parallel inside a Web Worker, `src/data/normalize.ts` joins them into one flat `Channel[]` and hard-excludes NSFW/`xxx`-category/closed/blocklisted/streamless channels (not a UI setting — see the disclaimer), and the result is cached in IndexedDB with a 12-hour TTL and silent background revalidation. See `src/data/` and `src/store/useCatalogStore.ts`.
 
-Some streams require a `Referer`/`User-Agent` header that browsers can't set on `<video>`/hls.js requests — by default those are excluded from in-page playback and surfaced instead as "copy link" / "open externally" options (`src/components/player/StreamFallback.tsx`), since they'll work fine in VLC or similar. Deploying the optional Worker in [`cloudflare-worker/`](cloudflare-worker/) and setting `VITE_STREAM_PROXY_URL` lets those same streams play in-page instead, by forwarding the header they need (see `src/lib/streamCapabilities.ts` and `src/lib/streamProxy.ts`).
+Some streams require a `Referer`/`User-Agent` header that browsers can't set on `<video>`/hls.js requests — by default those are excluded from in-page playback and surfaced instead as "copy link" / "open externally" options (`src/components/player/StreamFallback.tsx`), since they'll work fine in VLC or similar. Separately, plain-`http://` streams (about 1 in 5 in the catalog) are blocked by the browser's mixed-content policy on this `https://` site regardless of whether the origin itself is fine. Deploying the optional Worker in [`cloudflare-worker/`](cloudflare-worker/) and setting `VITE_STREAM_PROXY_URL` fixes both — forwarding the header the first group needs, and re-serving the second group over `https://` (see `src/lib/streamCapabilities.ts` and `src/lib/streamProxy.ts`).
 
 ## Project structure
 

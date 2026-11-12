@@ -8,6 +8,21 @@ export function needsHeaders(stream: Stream): boolean {
   return Boolean(stream.userAgent || stream.referrer)
 }
 
+/** A plain-http stream requested from this (https) page is blocked by the
+ * browser's mixed-content policy before it ever reaches the network —
+ * unrelated to whether the origin itself is actually still live. */
+function isInsecure(stream: Stream): boolean {
+  return stream.url.startsWith('http://')
+}
+
+/** Whether this stream needs routing through the proxy to have any chance
+ * of playing in-page — either because the origin requires headers a browser
+ * can't send, or because it's plain http and would otherwise be blocked by
+ * mixed-content on this https site. */
+function needsProxy(stream: Stream): boolean {
+  return needsHeaders(stream) || isInsecure(stream)
+}
+
 /**
  * Streams playable in-page: everything that doesn't need special headers,
  * plus (when cloudflare-worker/ is deployed and wired up — see
@@ -27,9 +42,11 @@ export function getRestrictedStreams(channel: Channel): Stream[] {
 }
 
 /** The URL the player should actually request: proxied when the stream needs
- * headers, the origin URL unchanged otherwise. */
+ * headers or is plain-http (and a proxy is configured — proxiedStreamUrl
+ * itself falls back to the origin URL otherwise), unchanged in every other
+ * case. */
 export function streamUrl(stream: Stream): string {
-  return needsHeaders(stream) ? proxiedStreamUrl(stream) : stream.url
+  return needsProxy(stream) ? proxiedStreamUrl(stream) : stream.url
 }
 
 export function streamLabel(stream: Stream, index: number): string {
