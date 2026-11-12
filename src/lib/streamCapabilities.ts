@@ -18,8 +18,12 @@ function isInsecure(stream: Stream): boolean {
 /** Whether this stream needs routing through the proxy to have any chance
  * of playing in-page — either because the origin requires headers a browser
  * can't send, or because it's plain http and would otherwise be blocked by
- * mixed-content on this https site. */
-function needsProxy(stream: Stream): boolean {
+ * mixed-content on this https site. Streams that fail for some *other*
+ * reason (most commonly: the origin just never sends CORS headers at all,
+ * which only breaks hls.js's XHR-based loading, not a desktop player) aren't
+ * knowable in advance — see streamUrl's forceProxy param, used as a retry
+ * fallback once a direct attempt has actually failed. */
+export function needsProxy(stream: Stream): boolean {
   return needsHeaders(stream) || isInsecure(stream)
 }
 
@@ -41,12 +45,12 @@ export function getRestrictedStreams(channel: Channel): Stream[] {
   return channel.streams.filter((s) => needsHeaders(s))
 }
 
-/** The URL the player should actually request: proxied when the stream needs
- * headers or is plain-http (and a proxy is configured — proxiedStreamUrl
- * itself falls back to the origin URL otherwise), unchanged in every other
- * case. */
-export function streamUrl(stream: Stream): string {
-  return needsProxy(stream) ? proxiedStreamUrl(stream) : stream.url
+/** The URL the player should actually request. Proxied when the stream
+ * needs headers or is plain-http (proxiedStreamUrl itself falls back to the
+ * origin URL when no proxy is configured), or when the caller passes
+ * `forceProxy` after a direct attempt already failed — see needsProxy. */
+export function streamUrl(stream: Stream, forceProxy = false): string {
+  return forceProxy || needsProxy(stream) ? proxiedStreamUrl(stream) : stream.url
 }
 
 export function streamLabel(stream: Stream, index: number): string {

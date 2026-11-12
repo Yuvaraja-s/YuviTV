@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import type { Stream } from '../data/types'
-import { streamUrl } from '../lib/streamCapabilities'
+import { isProxyConfigured } from '../lib/streamProxy'
+import { needsProxy, streamUrl } from '../lib/streamCapabilities'
 
 export type PlayerStatus = 'loading' | 'buffering' | 'playing' | 'paused' | 'error'
 
@@ -32,13 +33,25 @@ export function useHlsPlayer(videoRef: React.RefObject<HTMLVideoElement | null>,
   const [status, setStatus] = useState<PlayerStatus>('loading')
   const [error, setError] = useState<string | null>(null)
   const [streamIndex, setStreamIndex] = useState(0)
+  // Set once a direct attempt at the *current* stream has failed and we've
+  // escalated to retrying that same stream through the proxy — covers
+  // origins that are perfectly live but never send CORS headers at all
+  // (hls.js's XHR-based loading needs them even though a desktop player
+  // wouldn't care), which isn't knowable in advance like needsProxy's cases.
+  const [forceProxy, setForceProxy] = useState(false)
   const retryCountRef = useRef(0)
 
   // New channel: start from its first stream.
   useEffect(() => {
     setStreamIndex(0)
+    setForceProxy(false)
     retryCountRef.current = 0
   }, [streams])
+
+  // Each mirror gets its own fresh direct-then-proxy cycle.
+  useEffect(() => {
+    setForceProxy(false)
+  }, [streamIndex])
 
   useEffect(() => {
     const video = videoRef.current
@@ -50,11 +63,18 @@ export function useHlsPlayer(videoRef: React.RefObject<HTMLVideoElement | null>,
     setStatus('loading')
     setError(null)
 
-    // Every mirror gets tried automatically before giving up — most channels
-    // only list a couple, and a dead one shouldn't need a manual click past
-    // it when the next one in the list might just work.
+    // A stream that just failed gets one retry through the proxy before
+    // it's written off — fixes origins that are actually fine but just
+    // never send CORS headers (hls.js's XHR-based loading needs them; a
+    // desktop player wouldn't care). Only once that's also failed, or
+    // there's no proxy to retry through, does it move to the next mirror.
     const advanceOrFail = (message: string) => {
       if (cancelled) return
+      if (isProxyConfigured() && !forceProxy && !needsProxy(stream)) {
+        retryCountRef.current = 0
+        setForceProxy(true)
+        return
+      }
       if (streamIndex < streams.length - 1) {
         setStreamIndex((i) => i + 1)
       } else {
@@ -96,7 +116,7 @@ export function useHlsPlayer(videoRef: React.RefObject<HTMLVideoElement | null>,
 
       if (Hls.isSupported()) {
         hls = new Hls({ enableWorker: true })
-        hls.loadSource(streamUrl(stream))
+        hls.loadSource(streamUrl(stream, forceProxy))
         hls.attachMedia(video)
         hls.on(Hls.Events.FRAG_LOADED, armStallTimer)
         hls.on(Hls.Events.MANIFEST_PARSED, () => {
@@ -117,7 +137,7 @@ export function useHlsPlayer(videoRef: React.RefObject<HTMLVideoElement | null>,
           advanceOrFail('This stream is currently unavailable.')
         })
       } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-        video.src = streamUrl(stream)
+        video.src = streamUrl(stream, forceProxy)
         video.play().catch(() => {})
       } else {
         advanceOrFail("This browser can't play this stream format.")
@@ -136,15 +156,17 @@ export function useHlsPlayer(videoRef: React.RefObject<HTMLVideoElement | null>,
       video.load()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [streams, streamIndex, videoRef])
+  }, [streams, streamIndex, videoRef, forceProxy])
 
   const switchStream = (index: number) => {
     retryCountRef.current = 0
+    setForceProxy(false)
     setStreamIndex(index)
   }
 
   const retry = () => {
     retryCountRef.current = 0
+    setForceProxy(false)
     setStreamIndex(0)
     setStatus('loading')
     setError(null)
