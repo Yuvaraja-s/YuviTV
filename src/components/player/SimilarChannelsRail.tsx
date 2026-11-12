@@ -1,6 +1,10 @@
-import { useMemo } from 'react'
+import { useEffect, useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import type { Channel } from '../../data/types'
+import { useOnlineStatus } from '../../hooks/useOnlineStatus'
+import { enqueueHealthProbe } from '../../lib/channelProbeQueue'
+import { useChannelHealthStore } from '../../store/useChannelHealthStore'
+import { useFilterStore } from '../../store/useFilterStore'
 import { CountryFlag } from '../ui/CountryFlag'
 
 interface SimilarChannelsRailProps {
@@ -8,26 +12,50 @@ interface SimilarChannelsRailProps {
   channels: Channel[]
 }
 
-/** Lets a viewer jump straight to another channel from the watch page
- * itself — same category and/or country as the one playing, ranked by how
- * many of those it shares — instead of having to go back to Browse first. */
-export function SimilarChannelsRail({ current, channels }: SimilarChannelsRailProps) {
-  const similar = useMemo(() => {
-    const primaryCategory = current.categories[0]
+const RAIL_SIZE = 18
+// Probed pool is larger than what's shown so that, with "hide offline" on,
+// a few offline channels among the top matches don't shrink the rail below
+// its usual size — the next-best matches backfill instead.
+const PROBE_POOL_SIZE = RAIL_SIZE * 3
 
+/** Lets a viewer jump straight to another channel from the watch page
+ * itself — ranked by shared category and shared language with the one
+ * playing — instead of having to go back to Browse first. */
+export function SimilarChannelsRail({ current, channels }: SimilarChannelsRailProps) {
+  const hideOffline = useFilterStore((s) => s.hideOffline)
+  const online = useOnlineStatus()
+  // Subscribed so the rail re-renders as these probes resolve.
+  const healthResults = useChannelHealthStore((s) => s.results)
+
+  const ranked = useMemo(() => {
     return channels
       .map((c) => {
         if (c.id === current.id) return null
-        const sharedCategories = c.categories.includes(primaryCategory ?? '') ? 2 : 0
-        const sameCountry = c.country === current.country ? 1 : 0
-        const score = sharedCategories + sameCountry
+        const sharedCategory = c.categories.some((cat) => current.categories.includes(cat))
+        const sharedLanguage = c.languages.some((lang) => current.languages.includes(lang))
+        const score = (sharedCategory ? 2 : 0) + (sharedLanguage ? 1 : 0)
         return score > 0 ? { channel: c, score } : null
       })
       .filter((x): x is { channel: Channel; score: number } => x !== null)
       .sort((a, b) => b.score - a.score || a.channel.name.localeCompare(b.channel.name))
-      .slice(0, 18)
       .map((x) => x.channel)
   }, [channels, current])
+
+  // Only this rail's own small shortlist needs checking — eagerly probing
+  // the full ranked list the way the browse grid does would be overkill
+  // for ~18 cards, but still needed since these specific channels may
+  // never have scrolled into view anywhere else.
+  useEffect(() => {
+    if (!hideOffline || !online) return
+    for (const c of ranked.slice(0, PROBE_POOL_SIZE)) enqueueHealthProbe(c)
+  }, [hideOffline, online, ranked])
+
+  const similar = useMemo(() => {
+    const pool = ranked.slice(0, PROBE_POOL_SIZE)
+    const list = hideOffline ? pool.filter((c) => useChannelHealthStore.getState().getStatus(c.id) !== 'offline') : pool
+    return list.slice(0, RAIL_SIZE)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ranked, hideOffline, healthResults])
 
   if (similar.length === 0) return null
 
