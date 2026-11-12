@@ -7,6 +7,7 @@ import { useInView } from '../../hooks/useInView'
 import { useOnlineStatus } from '../../hooks/useOnlineStatus'
 import { enqueueHealthProbe } from '../../lib/channelProbeQueue'
 import { getPlayableStreams } from '../../lib/streamCapabilities'
+import { useChannelDiscoveryStore } from '../../store/useChannelDiscoveryStore'
 import { useChannelHealthStore } from '../../store/useChannelHealthStore'
 import { useFavoritesStore } from '../../store/useFavoritesStore'
 import { CountryFlag } from '../ui/CountryFlag'
@@ -35,6 +36,7 @@ export function ChannelCard({ channel }: { channel: Channel }) {
   const online = useOnlineStatus()
   const playableCount = getPlayableStreams(channel).length
   const health = useChannelHealthStore((s) => s.getStatus(channel.id))
+  const isNew = useChannelDiscoveryStore((s) => s.isNew(channel.id))
 
   useEffect(() => {
     if (inView && online && playableCount > 0 && health === 'unknown') {
@@ -105,6 +107,11 @@ export function ChannelCard({ channel }: { channel: Channel }) {
             <CategoryIcon size={11} aria-hidden="true" />
             {channel.categories[0] ?? 'general'}
           </span>
+          {isNew && (
+            <span className="ml-auto shrink-0 rounded-full bg-web-cyan/15 px-1.5 py-0.5 text-[10px] font-semibold text-web-cyan">
+              New
+            </span>
+          )}
         </div>
       </div>
 

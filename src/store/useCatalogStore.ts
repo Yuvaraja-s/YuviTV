@@ -2,6 +2,7 @@ import { create } from 'zustand'
 import { getCachedCatalog } from '../data/db'
 import type { Catalog, Category, Channel, Country, Language, LoadProgress, Region } from '../data/types'
 import type { CatalogWorkerRequest, CatalogWorkerResponse } from '../workers/catalogWorker'
+import { useChannelDiscoveryStore } from './useChannelDiscoveryStore'
 
 const CACHE_TTL_MS = 12 * 60 * 60 * 1000
 
@@ -34,6 +35,11 @@ function runWorker(onMessage: (msg: CatalogWorkerResponse) => void) {
 }
 
 function applyCatalog(catalog: Catalog) {
+  // Every path that sets channels (fresh cache hit, worker refresh, both
+  // init() and refresh()) flows through here, so this is the one place that
+  // needs to tell the discovery store what's currently in the catalog.
+  useChannelDiscoveryStore.getState().reconcile(catalog.channels.map((c) => c.id))
+
   return {
     channels: catalog.channels,
     categories: catalog.categories,

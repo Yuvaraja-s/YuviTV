@@ -6,6 +6,7 @@ const OPTIONS: { value: SortKey; label: string }[] = [
   { value: 'name-asc', label: 'Name A–Z' },
   { value: 'name-desc', label: 'Name Z–A' },
   { value: 'country-asc', label: 'Country A–Z' },
+  { value: 'newest', label: 'Newest first' },
 ]
 
 const itemClass =

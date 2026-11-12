@@ -1,6 +1,6 @@
 import * as Dialog from '@radix-ui/react-dialog'
-import { RotateCcw, SlidersHorizontal, WifiOff, X } from 'lucide-react'
-import { useState } from 'react'
+import { RotateCcw, Sparkles, SlidersHorizontal, WifiOff, X } from 'lucide-react'
+import { useState, type ReactNode } from 'react'
 import { useFilterStore } from '../../store/useFilterStore'
 import { CountrySelect } from './CountrySelect'
 import { LanguageSelect } from './LanguageSelect'
@@ -9,19 +9,44 @@ import { SortSelect } from './SortSelect'
 
 interface FilterSheetProps {
   resultCount: number
+  isStale?: boolean
+}
+
+function ToggleRow({ icon, label, active, onToggle }: { icon: ReactNode; label: string; active: boolean; onToggle: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onToggle}
+      aria-pressed={active}
+      className={`flex items-center justify-between gap-2 rounded-md border px-3 py-2.5 text-sm transition-colors ${
+        active ? 'border-web-red bg-web-red/15 text-paper' : 'border-ink-700 text-paper/70'
+      }`}
+    >
+      <span className="flex items-center gap-1.5">
+        {icon}
+        {label}
+      </span>
+      <span className={`relative h-5 w-9 shrink-0 rounded-full transition-colors ${active ? 'bg-web-red' : 'bg-ink-700'}`} aria-hidden="true">
+        <span
+          className={`absolute top-0.5 left-0.5 h-4 w-4 rounded-full bg-paper transition-transform duration-150 ${active ? 'translate-x-4' : 'translate-x-0'}`}
+        />
+      </span>
+    </button>
+  )
 }
 
 /** Mobile equivalent of FilterBar — a bottom sheet, since a full filter row
  * doesn't fit a phone screen. Filters apply live; the sheet is just a place
  * to reach them without eating permanent screen space on small viewports. */
-export function FilterSheet({ resultCount }: FilterSheetProps) {
+export function FilterSheet({ resultCount, isStale }: FilterSheetProps) {
   const [open, setOpen] = useState(false)
-  const { category, country, language, query, hideOffline, setHideOffline, reset } = useFilterStore()
-  const activeCount = [category, country, language, query, hideOffline].filter(Boolean).length
+  const { categories, countries, languages, query, hideOffline, setHideOffline, onlyNew, setOnlyNew, reset } = useFilterStore()
+  const activeCount = [categories.length, countries.length, languages.length, query, hideOffline, onlyNew].filter(Boolean).length
+  const hasActiveFilters = activeCount > 0
 
   return (
     <div className="flex items-center gap-2 sm:hidden">
-      <SearchInput resultCount={resultCount} />
+      <SearchInput resultCount={resultCount} isStale={isStale} />
       <Dialog.Root open={open} onOpenChange={setOpen}>
         <Dialog.Trigger asChild>
           <button
@@ -52,33 +77,22 @@ export function FilterSheet({ resultCount }: FilterSheetProps) {
               <CountrySelect />
               <LanguageSelect />
               <SortSelect />
-              <button
-                type="button"
-                onClick={() => setHideOffline(!hideOffline)}
-                aria-pressed={hideOffline}
-                className={`flex items-center justify-between gap-2 rounded-md border px-3 py-2.5 text-sm transition-colors ${
-                  hideOffline ? 'border-web-red bg-web-red/15 text-paper' : 'border-ink-700 text-paper/70'
-                }`}
-              >
-                <span className="flex items-center gap-1.5">
-                  <WifiOff size={14} aria-hidden="true" />
-                  Hide offline channels
-                </span>
-                <span
-                  className={`relative h-5 w-9 shrink-0 rounded-full transition-colors ${hideOffline ? 'bg-web-red' : 'bg-ink-700'}`}
-                  aria-hidden="true"
-                >
-                  <span
-                    className={`absolute top-0.5 left-0.5 h-4 w-4 rounded-full bg-paper transition-transform duration-150 ${
-                      hideOffline ? 'translate-x-4' : 'translate-x-0'
-                    }`}
-                  />
-                </span>
-              </button>
+              <ToggleRow
+                icon={<WifiOff size={14} aria-hidden="true" />}
+                label="Hide offline channels"
+                active={hideOffline}
+                onToggle={() => setHideOffline(!hideOffline)}
+              />
+              <ToggleRow
+                icon={<Sparkles size={14} aria-hidden="true" />}
+                label="Newly added only"
+                active={onlyNew}
+                onToggle={() => setOnlyNew(!onlyNew)}
+              />
             </div>
 
             <div className="mt-6 flex gap-2">
-              {(category || country || language || query || hideOffline) && (
+              {hasActiveFilters && (
                 <button
                   type="button"
                   onClick={reset}

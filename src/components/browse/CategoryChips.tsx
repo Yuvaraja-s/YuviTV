@@ -5,7 +5,7 @@ import { Chip } from '../ui/Chip'
 
 export function CategoryChips() {
   const { categoryOptions } = useFacets()
-  const { category, setCategory } = useFilterStore()
+  const { categories, toggleCategory } = useFilterStore()
 
   return (
     <div
@@ -15,9 +15,9 @@ export function CategoryChips() {
     >
       {categoryOptions.map((opt) => {
         const Icon = getCategoryIcon(opt.code)
-        const active = category === opt.code
+        const active = categories.includes(opt.code)
         return (
-          <Chip key={opt.code} active={active} onClick={() => setCategory(opt.code)}>
+          <Chip key={opt.code} active={active} onClick={() => toggleCategory(opt.code)}>
             <span className="flex items-center gap-1.5">
               <Icon size={14} aria-hidden="true" />
               {opt.name}

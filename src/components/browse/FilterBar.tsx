@@ -1,4 +1,4 @@
-import { RotateCcw, WifiOff } from 'lucide-react'
+import { RotateCcw, Sparkles, WifiOff } from 'lucide-react'
 import { Chip } from '../ui/Chip'
 import { useFilterStore } from '../../store/useFilterStore'
 import { CountrySelect } from './CountrySelect'
@@ -8,16 +8,19 @@ import { SortSelect } from './SortSelect'
 
 interface FilterBarProps {
   resultCount: number
+  isStale?: boolean
 }
 
 /** Desktop filter row — search + facet selects + sort, all visible at once. */
-export function FilterBar({ resultCount }: FilterBarProps) {
-  const { category, country, language, query, hideOffline, setHideOffline, reset } = useFilterStore()
-  const hasActiveFilters = Boolean(category || country || language || query || hideOffline)
+export function FilterBar({ resultCount, isStale }: FilterBarProps) {
+  const { categories, countries, languages, query, hideOffline, setHideOffline, onlyNew, setOnlyNew, reset } = useFilterStore()
+  const hasActiveFilters = Boolean(
+    categories.length || countries.length || languages.length || query || hideOffline || onlyNew,
+  )
 
   return (
     <div className="hidden flex-wrap items-center gap-2 sm:flex">
-      <SearchInput resultCount={resultCount} />
+      <SearchInput resultCount={resultCount} isStale={isStale} />
       <CountrySelect />
       <LanguageSelect />
       <SortSelect />
@@ -25,6 +28,12 @@ export function FilterBar({ resultCount }: FilterBarProps) {
         <span className="flex items-center gap-1.5">
           <WifiOff size={13} aria-hidden="true" />
           Hide offline
+        </span>
+      </Chip>
+      <Chip active={onlyNew} onClick={() => setOnlyNew(!onlyNew)}>
+        <span className="flex items-center gap-1.5">
+          <Sparkles size={13} aria-hidden="true" />
+          New
         </span>
       </Chip>
       {hasActiveFilters && (

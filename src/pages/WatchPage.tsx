@@ -1,6 +1,7 @@
 import { ArrowLeft, Star, WifiOff } from 'lucide-react'
 import { useEffect, useMemo } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
+import { SimilarChannelsRail } from '../components/player/SimilarChannelsRail'
 import { VideoPlayer } from '../components/player/VideoPlayer'
 import { CountryFlag } from '../components/ui/CountryFlag'
 import { useChannels } from '../hooks/useChannels'
@@ -91,6 +92,8 @@ export function WatchPage() {
       <p className="text-xs text-paper/60">
         Keyboard: Space play/pause · M mute · F fullscreen · ↑/↓ volume · ←/→ previous/next channel
       </p>
+
+      <SimilarChannelsRail current={channel} channels={allChannels} />
     </div>
   )
 }
