@@ -45,7 +45,7 @@ interface PlayerControlsProps {
 // that (verified down to ~17px on an iPhone-width viewport) once the row
 // runs out of space, rather than the row scrolling or wrapping.
 const iconButtonBase =
-  'h-11 w-11 shrink-0 items-center justify-center rounded-full text-paper/90 hover:bg-paper/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-web-cyan'
+  'h-11 w-11 shrink-0 items-center justify-center rounded-full text-paper/90 transition-all duration-150 hover:bg-paper/10 active:scale-90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-web-cyan'
 const iconButtonClass = `flex ${iconButtonBase}`
 // Combining a bare `flex` with `hidden` on the same element is ambiguous —
 // both are unprefixed display utilities. This starts from `hidden` instead

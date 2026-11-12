@@ -3,6 +3,7 @@ import type { Channel } from '../../data/types'
 import { useHlsPlayer } from '../../hooks/useHlsPlayer'
 import { enterFullscreen, exitFullscreen, getFullscreenElement, isFullscreenSupported } from '../../lib/fullscreen'
 import { getPlayableStreams, getRestrictedStreams } from '../../lib/streamCapabilities'
+import { useChannelHealthStore } from '../../store/useChannelHealthStore'
 import { CountryFlag } from '../ui/CountryFlag'
 import { TuningTransition } from '../loader/TuningTransition'
 import { PlayerControls } from './PlayerControls'
@@ -30,6 +31,15 @@ export function VideoPlayer({ channel, hasPrevious, hasNext, onPrevious, onNext 
   // the entire hls.js instance on every single one of those re-renders.
   const playableStreams = useMemo(() => getPlayableStreams(channel), [channel])
   const player = useHlsPlayer(videoRef, playableStreams)
+  const reportHealth = useChannelHealthStore((s) => s.reportResult)
+
+  // The real player is the most authoritative health signal there is — a
+  // successful or exhausted playback attempt overrides any earlier
+  // background-probe guess for this channel.
+  useEffect(() => {
+    if (player.status === 'playing') reportHealth(channel.id, true)
+    else if (player.status === 'error') reportHealth(channel.id, false)
+  }, [player.status, channel.id, reportHealth])
 
   const [paused, setPaused] = useState(true)
   const [muted, setMuted] = useState(false)
@@ -201,7 +211,7 @@ export function VideoPlayer({ channel, hasPrevious, hasNext, onPrevious, onNext 
       )}
 
       <div
-        className={`pointer-events-none absolute inset-x-0 top-0 flex items-start justify-between bg-gradient-to-b from-ink-950/90 to-transparent p-4 transition-opacity duration-300 ${
+        className={`pointer-events-none absolute inset-x-0 top-0 flex items-start justify-between bg-gradient-to-b from-ink-950/90 to-transparent p-4 transition-opacity duration-200 ${
           controlsVisible ? 'opacity-100' : 'opacity-0'
         }`}
       >
@@ -217,7 +227,7 @@ export function VideoPlayer({ channel, hasPrevious, hasNext, onPrevious, onNext 
         </div>
       </div>
 
-      <div className={`absolute inset-x-0 bottom-0 transition-opacity duration-300 ${controlsVisible ? 'opacity-100' : 'pointer-events-none opacity-0'}`}>
+      <div className={`absolute inset-x-0 bottom-0 transition-opacity duration-200 ${controlsVisible ? 'opacity-100' : 'pointer-events-none opacity-0'}`}>
         <PlayerControls
           paused={paused}
           muted={muted}

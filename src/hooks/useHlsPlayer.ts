@@ -4,11 +4,6 @@ import type { Stream } from '../data/types'
 export type PlayerStatus = 'loading' | 'buffering' | 'playing' | 'paused' | 'error'
 
 const STALL_TIMEOUT_MS = 8000
-// Channels can list dozens of mirrors; auto-retrying all of them serially
-// would make the worst case (every mirror down) take minutes. Auto-advance
-// through a handful, then stop — the rest stay one click away in the
-// Sources menu rather than being tried blind.
-const MAX_AUTO_ATTEMPTS = 4
 
 interface UseHlsPlayerResult {
   status: PlayerStatus
@@ -54,9 +49,12 @@ export function useHlsPlayer(videoRef: React.RefObject<HTMLVideoElement | null>,
     setStatus('loading')
     setError(null)
 
+    // Every mirror gets tried automatically before giving up — most channels
+    // only list a couple, and a dead one shouldn't need a manual click past
+    // it when the next one in the list might just work.
     const advanceOrFail = (message: string) => {
       if (cancelled) return
-      if (streamIndex < streams.length - 1 && streamIndex < MAX_AUTO_ATTEMPTS - 1) {
+      if (streamIndex < streams.length - 1) {
         setStreamIndex((i) => i + 1)
       } else {
         setStatus('error')

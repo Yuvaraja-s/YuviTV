@@ -1,8 +1,13 @@
-import { Star } from 'lucide-react'
-import { useState } from 'react'
+import { ExternalLink, Star } from 'lucide-react'
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { getCategoryIcon } from '../../data/categoryIcons'
 import type { Channel } from '../../data/types'
+import { useInView } from '../../hooks/useInView'
+import { useOnlineStatus } from '../../hooks/useOnlineStatus'
+import { enqueueHealthProbe } from '../../lib/channelProbeQueue'
+import { getPlayableStreams } from '../../lib/streamCapabilities'
+import { useChannelHealthStore } from '../../store/useChannelHealthStore'
 import { useFavoritesStore } from '../../store/useFavoritesStore'
 import { CountryFlag } from '../ui/CountryFlag'
 
@@ -26,11 +31,51 @@ export function ChannelCard({ channel }: { channel: Channel }) {
   const CategoryIcon = getCategoryIcon(channel.categories[0] ?? '')
   const showLogo = channel.logo && !logoFailed
 
+  const { ref, inView } = useInView<HTMLDivElement>({ rootMargin: '200px' })
+  const online = useOnlineStatus()
+  const playableCount = getPlayableStreams(channel).length
+  const health = useChannelHealthStore((s) => s.getStatus(channel.id))
+
+  useEffect(() => {
+    if (inView && online && playableCount > 0 && health === 'unknown') {
+      enqueueHealthProbe(channel)
+    }
+  }, [inView, online, playableCount, health, channel])
+
   return (
-    <div className="group relative flex h-full flex-col overflow-hidden rounded-lg border border-ink-700 bg-ink-900 transition-colors hover:border-ink-600 hover:shadow-glow-sm">
+    <div
+      ref={ref}
+      className={`group relative flex h-full flex-col overflow-hidden rounded-lg border border-ink-700 bg-ink-900 transition-all duration-150 ease-out hover:-translate-y-0.5 hover:border-ink-600 hover:shadow-glow-sm ${
+        health === 'offline' ? 'opacity-70' : ''
+      }`}
+    >
       <Link to={`/watch/${channel.id}`} className="absolute inset-0 z-0 rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-web-blue">
-        <span className="sr-only">Watch {channel.name}</span>
+        <span className="sr-only">
+          Watch {channel.name}
+          {health === 'offline' ? ' (reported offline)' : ''}
+        </span>
       </Link>
+
+      {playableCount === 0 ? (
+        <span className="absolute top-2 left-2 z-10 flex items-center gap-1 rounded-full bg-ink-950/70 px-2 py-1 text-[10px] font-medium text-paper/70 backdrop-blur">
+          <ExternalLink size={10} aria-hidden="true" />
+          VLC only
+        </span>
+      ) : health === 'online' ? (
+        <span className="absolute top-2 left-2 z-10 flex items-center gap-1.5 rounded-full bg-ink-950/70 px-2 py-1 text-[10px] font-medium text-paper/80 backdrop-blur">
+          <span className="h-1.5 w-1.5 animate-pulse-glow rounded-full bg-web-green" aria-hidden="true" />
+          <span className="sr-only sm:not-sr-only">Live</span>
+        </span>
+      ) : health === 'offline' ? (
+        <span className="absolute top-2 left-2 z-10 flex items-center gap-1.5 rounded-full bg-ink-950/70 px-2 py-1 text-[10px] font-medium text-paper/80 backdrop-blur">
+          <span className="h-1.5 w-1.5 rounded-full bg-web-red-text" aria-hidden="true" />
+          <span className="sr-only sm:not-sr-only">Offline</span>
+        </span>
+      ) : health === 'checking' ? (
+        <span className="absolute top-2 left-2 z-10 flex h-5 w-5 items-center justify-center rounded-full bg-ink-950/70 backdrop-blur" aria-hidden="true">
+          <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-paper/40" />
+        </span>
+      ) : null}
 
       <div className="pointer-events-none flex flex-1 flex-col p-3">
         <div className="mb-3 flex aspect-video items-center justify-center rounded-md bg-ink-950">
@@ -68,9 +113,9 @@ export function ChannelCard({ channel }: { channel: Channel }) {
         onClick={() => toggle(channel.id)}
         aria-pressed={favorite}
         aria-label={favorite ? `Remove ${channel.name} from favorites` : `Add ${channel.name} to favorites`}
-        className="absolute top-2 right-2 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-ink-950/70 text-paper/70 backdrop-blur transition-colors hover:text-web-cyan focus-visible:outline focus-visible:outline-2 focus-visible:outline-web-blue"
+        className="absolute top-2 right-2 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-ink-950/70 text-paper/70 backdrop-blur transition-all duration-150 hover:scale-110 hover:text-web-cyan active:scale-90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-web-blue"
       >
-        <Star size={16} aria-hidden="true" fill={favorite ? 'currentColor' : 'none'} className={favorite ? 'text-web-red' : ''} />
+        <Star size={16} aria-hidden="true" fill={favorite ? 'currentColor' : 'none'} className={favorite ? 'text-web-red transition-transform' : 'transition-transform'} />
       </button>
     </div>
   )

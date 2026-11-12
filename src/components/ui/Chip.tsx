@@ -11,7 +11,7 @@ export function Chip({ active, className, ...props }: ChipProps) {
       type="button"
       aria-pressed={active}
       className={cn(
-        'shrink-0 rounded-full border px-3.5 py-1.5 text-sm font-medium whitespace-nowrap transition-colors',
+        'shrink-0 rounded-full border px-3.5 py-1.5 text-sm font-medium whitespace-nowrap transition-all duration-150 active:scale-95',
         active
           ? 'border-web-red bg-web-red/15 text-paper shadow-glow-sm'
           : 'border-ink-700 bg-ink-900 text-paper/70 hover:border-ink-600 hover:text-paper',

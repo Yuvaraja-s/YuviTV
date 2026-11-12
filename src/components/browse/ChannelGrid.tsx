@@ -41,7 +41,7 @@ export function ChannelGrid({ channels }: ChannelGridProps) {
             key={row.key}
             data-index={row.index}
             ref={virtualizer.measureElement}
-            className="absolute top-0 left-0 grid w-full gap-4"
+            className="animate-card-in absolute top-0 left-0 grid w-full gap-4"
             style={{
               gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))`,
               transform: `translateY(${row.start - virtualizer.options.scrollMargin}px)`,

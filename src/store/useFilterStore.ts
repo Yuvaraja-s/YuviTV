@@ -9,11 +9,13 @@ interface FilterState {
   country: string | null
   language: string | null
   sort: SortKey
+  hideOffline: boolean
   setQuery: (query: string) => void
   setCategory: (category: string | null) => void
   setCountry: (country: string | null) => void
   setLanguage: (language: string | null) => void
   setSort: (sort: SortKey) => void
+  setHideOffline: (hideOffline: boolean) => void
   reset: () => void
 }
 
@@ -23,6 +25,7 @@ const initial = {
   country: null,
   language: null,
   sort: 'name-asc' as SortKey,
+  hideOffline: false,
 }
 
 export const useFilterStore = create<FilterState>()(
@@ -34,6 +37,7 @@ export const useFilterStore = create<FilterState>()(
       setCountry: (country) => set({ country }),
       setLanguage: (language) => set({ language }),
       setSort: (sort) => set({ sort }),
+      setHideOffline: (hideOffline) => set({ hideOffline }),
       reset: () => set(initial),
     }),
     { name: 'yuvitv-filters' },

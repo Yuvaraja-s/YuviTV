@@ -17,6 +17,9 @@
   --color-web-blue: #1f6fff;
   --color-web-blue-dim: #123a8a;
   --color-web-cyan: #4de3ff;
+  /* Used only for the channel live/offline status dot — the one place a
+     green/red pairing earns its keep over the red/blue/cyan brand palette. */
+  --color-web-green: #2ee68f;
 
   --color-paper: #f4f1e8;
 
@@ -139,6 +142,34 @@ body {
     transform: translateY(100%);
   }
 }
+@keyframes card-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+@keyframes sheet-overlay-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes sheet-content-in {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
 
 .animate-pulse-glow {
   animation: pulse-glow 2.6s ease-in-out infinite;
@@ -158,6 +189,19 @@ body {
 .animate-scan-line {
   animation: scan-line 1.6s ease-in-out infinite;
 }
+.animate-card-in {
+  animation: card-in 0.22s ease-out backwards;
+}
+.animate-sheet-overlay {
+  animation: sheet-overlay-in 0.15s ease-out;
+}
+.animate-sheet-content {
+  animation: sheet-content-in 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+[data-state='closed'].animate-sheet-overlay,
+[data-state='closed'].animate-sheet-content {
+  animation: none;
+}
 
 /* Motion primitives are decorative; kill them outright under reduced motion
    rather than relying on every component to remember to check the flag. */
@@ -167,7 +211,10 @@ body {
   .animate-radar-sweep,
   .animate-draw-line,
   .animate-marquee,
-  .animate-scan-line {
+  .animate-scan-line,
+  .animate-card-in,
+  .animate-sheet-overlay,
+  .animate-sheet-content {
     animation: none !important;
   }
   *,
